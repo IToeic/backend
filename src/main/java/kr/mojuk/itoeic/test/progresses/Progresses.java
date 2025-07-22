@@ -1,0 +1,38 @@
+package kr.mojuk.itoeic.test.progresses;
+
+import jakarta.persistence.*;
+import kr.mojuk.itoeic.test.user.Users;
+import kr.mojuk.itoeic.word.word.Word;
+import lombok.*;
+
+@Entity
+@Table(name = "progresses", uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "word_id"})})
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Progresses {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "progress_id")
+    private Integer progressId;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private Users user;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "word_id", nullable = false)
+    private Word word;
+	
+	@Builder.Default
+	@Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status = Status.LEARNING;
+
+    public enum Status {
+        LEARNING,
+        COMPLETED
+    }
+}
