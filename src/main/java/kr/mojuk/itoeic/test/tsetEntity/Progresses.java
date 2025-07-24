@@ -1,10 +1,11 @@
-package kr.mojuk.itoeic.test.progresses;
+package kr.mojuk.itoeic.test.tsetEntity;
 
 import jakarta.persistence.*;
-import kr.mojuk.itoeic.test.user.Users;
+import kr.mojuk.itoeic.user.Users;
 import kr.mojuk.itoeic.word.word.Word;
 import lombok.*;
 
+//진행도 테이블
 @Entity
 @Table(name = "progresses", uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "word_id"})})
 @Getter

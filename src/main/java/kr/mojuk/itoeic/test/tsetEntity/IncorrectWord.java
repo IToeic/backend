@@ -1,10 +1,12 @@
-package kr.mojuk.itoeic.test.incorrectWord;
+package kr.mojuk.itoeic.test.tsetEntity;
 
 import jakarta.persistence.*;
+import kr.mojuk.itoeic.user.Users;
 import kr.mojuk.itoeic.word.word.Word;
-import kr.mojuk.itoeic.test.user.Users;
 import lombok.*;
 
+
+//틀린단어 테이블
 @Entity
 @Table(name = "incorrect_words", uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "word_id"})})
 @Getter

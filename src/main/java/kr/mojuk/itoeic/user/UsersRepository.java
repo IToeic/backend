@@ -1,4 +1,4 @@
-package kr.mojuk.itoeic.test.user;
+package kr.mojuk.itoeic.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

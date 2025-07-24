@@ -1,4 +1,4 @@
-package kr.mojuk.itoeic.test.user;
+package kr.mojuk.itoeic.user;
 
 import java.time.LocalDateTime;
 
