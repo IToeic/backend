@@ -1,9 +1,15 @@
 package kr.mojuk.itoeic.word.wordpack;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "wordpacks")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class WordPack {
 
     @Id
@@ -11,24 +17,6 @@ public class WordPack {
     @Column(name = "wordpack_id")
     private Integer wordpackId;
 
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
-
-    public WordPack() {}
-
-    public Integer getWordpackId() {
-        return wordpackId;
-    }
-
-    public void setWordpackId(Integer wordpackId) {
-        this.wordpackId = wordpackId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

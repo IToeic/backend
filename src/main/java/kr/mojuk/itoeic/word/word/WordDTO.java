@@ -1,43 +1,29 @@
 package kr.mojuk.itoeic.word.word;
 
+import lombok.*;
+
 public class WordDTO {
 
-    // ✅ 단어 조회용 응답 DTO
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class Response {
-        private Integer id;
+        private Integer wordId;
         private String word;
         private String meaning;
         private String voiceUrl;
-        private String wordPackName; // 단어팩 이름
+        private Integer wordpackId;
 
-        // 🔧 생성자
-        public Response(Integer id, String word, String meaning, String voiceUrl, String wordPackName) {
-            this.id = id;
-            this.word = word;
-            this.meaning = meaning;
-            this.voiceUrl = voiceUrl;
-            this.wordPackName = wordPackName;
-        }
-
-        // 🔍 Getter 메서드들
-        public Integer getId() {
-            return id;
-        }
-
-        public String getWord() {
-            return word;
-        }
-
-        public String getMeaning() {
-            return meaning;
-        }
-
-        public String getVoiceUrl() {
-            return voiceUrl;
-        }
-
-        public String getWordPackName() {
-            return wordPackName;
+        public static Response fromEntity(Word word) {
+            return Response.builder()
+                    .wordId(word.getWordId())
+                    .word(word.getWord())
+                    .meaning(word.getMeaning())
+                    .voiceUrl(word.getVoiceUrl())
+                    .wordpackId(word.getWordPack().getWordpackId())
+                    .build();
         }
     }
 }

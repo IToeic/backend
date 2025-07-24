@@ -2,9 +2,15 @@ package kr.mojuk.itoeic.word.word;
 
 import jakarta.persistence.*;
 import kr.mojuk.itoeic.word.wordpack.WordPack;
+import lombok.*;
 
 @Entity
 @Table(name = "words")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Word {
 
     @Id
@@ -24,44 +30,4 @@ public class Word {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wordpack_id", nullable = false)
     private WordPack wordPack;
-
-    public Integer getWordId() {
-        return wordId;
-    }
-
-    public void setWordId(Integer wordId) {
-        this.wordId = wordId;
-    }
-
-    public String getWord() {
-        return word;
-    }
-
-    public void setWord(String word) {
-        this.word = word;
-    }
-
-    public String getMeaning() {
-        return meaning;
-    }
-
-    public void setMeaning(String meaning) {
-        this.meaning = meaning;
-    }
-
-    public String getVoiceUrl() {
-        return voiceUrl;
-    }
-
-    public void setVoiceUrl(String voiceUrl) {
-        this.voiceUrl = voiceUrl;
-    }
-
-    public WordPack getWordPack() {
-        return wordPack;
-    }
-
-    public void setWordPack(WordPack wordPack) {
-        this.wordPack = wordPack;
-    }
 }
