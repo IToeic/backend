@@ -60,7 +60,7 @@ public class DailyTestServise {
                 }
             }
         }
-        //단어들의 상태를 completed로 업데이트
+        //단어들의 상태를 completed 업데이트
         progressesRepository.updateStatusToCompleted(request.getUserId(), wordIds);
     }
     
