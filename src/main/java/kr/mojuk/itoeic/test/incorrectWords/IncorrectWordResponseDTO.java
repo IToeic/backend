@@ -1,5 +1,6 @@
 package kr.mojuk.itoeic.test.incorrectWords;
 
+import kr.mojuk.itoeic.test.tsetEntity.IncorrectWord;
 import lombok.*;
 
 @Getter
@@ -8,13 +9,16 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class IncorrectWordResponseDTO {
-	private String word;
+    private Integer IncorrectWordId; 
+    private String word;
     private String meaning;
 
-    public static IncorrectWordResponseDTO fromEntity(kr.mojuk.itoeic.test.tsetEntity.IncorrectWord entity) {
+    public static IncorrectWordResponseDTO fromEntity(IncorrectWord entity) {
         return IncorrectWordResponseDTO.builder()
+                .IncorrectWordId(entity.getIncorrectWordId())
                 .word(entity.getWord().getWord())
                 .meaning(entity.getWord().getMeaning())
                 .build();
     }
 }
+
