@@ -24,7 +24,7 @@ public class Users {
 	@Column(name = "password_hash", nullable = false, length = 255)
 	private String passwordHash;
 	
-	@Column(nullable = false, length = 100)
+	@Column(nullable = false, length = 100, unique = true)
     private String email;
 
 	@Column(name = "created_at", columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
@@ -32,4 +32,7 @@ public class Users {
 
     @Column(name = "is_deleted", columnDefinition = "TINYINT DEFAULT 0")
     private Boolean isDeleted;
+    
+    @Column(name = "email_verified", columnDefinition = "TINYINT DEFAULT 0")
+    private Boolean emailVerified;
 }
