@@ -14,7 +14,7 @@ public class IncorrectWordController {
     private final IncorrectWordService incorrectWordService;
 
     // 사용자 ID로 틀린 단어 조회
-    @GetMapping("/{userId}")
+    @GetMapping("/user/{userId}")
     public ResponseEntity<List<IncorrectWordResponseDTO>> getIncorrectWordsByUserId(@PathVariable("userId") String userId) {
         List<IncorrectWordResponseDTO> incorrectWords = incorrectWordService.getIncorrectWordsByUserId(userId);
         return ResponseEntity.ok(incorrectWords);

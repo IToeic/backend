@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/wordpack/")
+@RequestMapping("/api/wordpack")
 public class WordpackTestController {
 
 	private final WordpackTestServise wordpackTestServise;

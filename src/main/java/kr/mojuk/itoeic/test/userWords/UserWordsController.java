@@ -16,20 +16,20 @@ public class UserWordsController {
     private final UserWordsService userWordService;
 
 
-    @GetMapping("/{userId}")
+    @GetMapping("user/{userId}")
     public ResponseEntity<List<UserWordResponseDto>> getUserWords(@PathVariable("userId") String userId) {
         List<UserWordResponseDto> words = userWordService.getUserWords(userId);
         return ResponseEntity.ok(words);
     }
 
 
-    @PostMapping("/{userId}")
+    @PostMapping
     public ResponseEntity<Void> addWord(@RequestBody UserWordRequestDto requestDto) {
         userWordService.addUserWord(requestDto);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping
     public ResponseEntity<Void> deleteWord(@RequestBody UserWordRequestDto requestDto) {
         userWordService.deleteUserWord(requestDto);
         return ResponseEntity.ok().build();
