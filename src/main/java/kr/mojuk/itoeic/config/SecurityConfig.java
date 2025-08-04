@@ -22,9 +22,10 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/user/**").permitAll()
                 .anyRequest().permitAll()
-            );
+            )
+            .formLogin(form -> form.disable())
+            .httpBasic(basic -> basic.disable());
         
         return http.build();
     }

@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpSession;
+
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
@@ -19,14 +21,22 @@ public class UserController {
     private final EmailService emailService;
     
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequestDto) {
+    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequestDto, HttpSession session) {
         LoginResponseDto response = userService.login(loginRequestDto);
         
         if (response.isSuccess()) {
+            // 로그인 성공 시 세션에 사용자 ID 저장
+            session.setAttribute("userId", response.getUserId());
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.badRequest().body(response);
         }
+    }
+    
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok("로그아웃되었습니다.");
     }
     
     @PostMapping("/signup")
@@ -84,9 +94,17 @@ public class UserController {
     }
     
     // 마이페이지 조회
-    @GetMapping("/mypage/{userId}")
-    public ResponseEntity<MyPageResponseDto> getMyPageInfo(@PathVariable("userId") String userId) {
+    @GetMapping("/mypage")
+    public ResponseEntity<MyPageResponseDto> getMyPageInfo(HttpSession session) {
         try {
+            String userId = (String) session.getAttribute("userId");
+            if (userId == null) {
+                return ResponseEntity.status(401).body(MyPageResponseDto.builder()
+                        .success(false)
+                        .message("로그인이 필요합니다.")
+                        .build());
+            }
+            
             MyPageResponseDto response = userService.getMyPageInfo(userId);
             
             if (response.isSuccess()) {
@@ -105,11 +123,19 @@ public class UserController {
     }
     
     // 프로필 수정
-    @PutMapping("/mypage/{userId}")
+    @PutMapping("/mypage")
     public ResponseEntity<UpdateProfileResponseDto> updateProfile(
-            @PathVariable("userId") String userId,
+            HttpSession session,
             @RequestBody UpdateProfileRequestDto requestDto) {
         try {
+            String userId = (String) session.getAttribute("userId");
+            if (userId == null) {
+                return ResponseEntity.status(401).body(UpdateProfileResponseDto.builder()
+                        .success(false)
+                        .message("로그인이 필요합니다.")
+                        .build());
+            }
+            
             UpdateProfileResponseDto response = userService.updateProfile(userId, requestDto);
             
             if (response.isSuccess()) {
