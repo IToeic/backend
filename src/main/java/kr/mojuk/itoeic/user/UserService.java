@@ -5,6 +5,9 @@ import kr.mojuk.itoeic.user.dto.LoginRequestDto;
 import kr.mojuk.itoeic.user.dto.LoginResponseDto;
 import kr.mojuk.itoeic.user.dto.SignupRequestDto;
 import kr.mojuk.itoeic.user.dto.SignupResponseDto;
+import kr.mojuk.itoeic.user.dto.MyPageResponseDto;
+import kr.mojuk.itoeic.user.dto.UpdateProfileRequestDto;
+import kr.mojuk.itoeic.user.dto.UpdateProfileResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -91,5 +94,52 @@ public class UserService {
                 .success(true)
                 .message("회원가입이 완료되었습니다.")
                 .build();
+    }
+    
+    // 마이페이지 조회
+    public MyPageResponseDto getMyPageInfo(String userId) {
+        return usersRepository.findByUserId(userId)
+                .filter(user -> !user.getIsDeleted())
+                .map(user -> MyPageResponseDto.builder()
+                        .success(true)
+                        .message("마이페이지 정보 조회 성공")
+                        .userId(user.getUserId())
+                        .name(user.getName())
+                        .email(user.getEmail())
+                        .build())
+                .orElse(MyPageResponseDto.builder()
+                        .success(false)
+                        .message("사용자를 찾을 수 없습니다.")
+                        .build());
+    }
+    
+    // 프로필 수정
+    public UpdateProfileResponseDto updateProfile(String userId, UpdateProfileRequestDto requestDto) {
+        return usersRepository.findByUserId(userId)
+                .filter(user -> !user.getIsDeleted())
+                .filter(user -> passwordEncoder.matches(requestDto.getCurrentPassword(), user.getPasswordHash()))
+                .map(user -> {
+                    // 이름 수정
+                    if (requestDto.getNewName() != null && !requestDto.getNewName().trim().isEmpty()) {
+                        user.setName(requestDto.getNewName().trim());
+                    }
+                    
+                    // 비밀번호 수정
+                    if (requestDto.getNewPassword() != null && !requestDto.getNewPassword().trim().isEmpty()) {
+                        String encodedNewPassword = passwordEncoder.encode(requestDto.getNewPassword().trim());
+                        user.setPasswordHash(encodedNewPassword);
+                    }
+                    
+                    usersRepository.save(user);
+                    
+                    return UpdateProfileResponseDto.builder()
+                            .success(true)
+                            .message("프로필이 성공적으로 수정되었습니다.")
+                            .build();
+                })
+                .orElse(UpdateProfileResponseDto.builder()
+                        .success(false)
+                        .message("현재 비밀번호가 올바르지 않거나 사용자를 찾을 수 없습니다.")
+                        .build());
     }
 } 

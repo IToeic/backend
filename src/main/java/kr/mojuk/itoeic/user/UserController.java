@@ -82,4 +82,48 @@ public class UserController {
                     .build());
         }
     }
+    
+    // 마이페이지 조회
+    @GetMapping("/mypage/{userId}")
+    public ResponseEntity<MyPageResponseDto> getMyPageInfo(@PathVariable("userId") String userId) {
+        try {
+            MyPageResponseDto response = userService.getMyPageInfo(userId);
+            
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
+        } catch (Exception e) {
+            System.err.println("Error in getMyPageInfo: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(MyPageResponseDto.builder()
+                    .success(false)
+                    .message("마이페이지 정보 조회 중 오류가 발생했습니다.")
+                    .build());
+        }
+    }
+    
+    // 프로필 수정
+    @PutMapping("/mypage/{userId}")
+    public ResponseEntity<UpdateProfileResponseDto> updateProfile(
+            @PathVariable("userId") String userId,
+            @RequestBody UpdateProfileRequestDto requestDto) {
+        try {
+            UpdateProfileResponseDto response = userService.updateProfile(userId, requestDto);
+            
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
+        } catch (Exception e) {
+            System.err.println("Error in updateProfile: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(UpdateProfileResponseDto.builder()
+                    .success(false)
+                    .message("프로필 수정 중 오류가 발생했습니다.")
+                    .build());
+        }
+    }
 } 
