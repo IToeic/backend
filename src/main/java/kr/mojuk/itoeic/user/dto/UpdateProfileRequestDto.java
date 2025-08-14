@@ -6,7 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateProfileRequestDto {
-    private String currentPassword;
     private String newName;
     private String newPassword;
 } 

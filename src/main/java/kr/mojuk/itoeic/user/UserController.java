@@ -168,6 +168,10 @@ public class UserController {
                         .build());
             }
             
+            System.out.println("UpdateProfile Request - userId: " + userId);
+            System.out.println("UpdateProfile Request - newName: " + requestDto.getNewName());
+            System.out.println("UpdateProfile Request - newPassword: " + (requestDto.getNewPassword() != null ? "***" : "null"));
+            
             UpdateProfileResponseDto response = userService.updateProfile(userId, requestDto);
             
             if (response.isSuccess()) {
@@ -177,10 +181,11 @@ public class UserController {
             }
         } catch (Exception e) {
             System.err.println("Error in updateProfile: " + e.getMessage());
+            System.err.println("Error details: " + e.getClass().getSimpleName());
             e.printStackTrace();
             return ResponseEntity.badRequest().body(UpdateProfileResponseDto.builder()
                     .success(false)
-                    .message("프로필 수정 중 오류가 발생했습니다.")
+                    .message("프로필 수정 중 오류가 발생했습니다: " + e.getMessage())
                     .build());
         }
     }

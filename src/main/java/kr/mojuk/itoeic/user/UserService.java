@@ -116,32 +116,58 @@ public class UserService {
     
     // 프로필 수정
     public UpdateProfileResponseDto updateProfile(String userId, UpdateProfileRequestDto requestDto) {
-        return usersRepository.findByUserId(userId)
-                .filter(user -> !user.getIsDeleted())
-                .filter(user -> passwordEncoder.matches(requestDto.getCurrentPassword(), user.getPasswordHash()))
-                .map(user -> {
-                    // 이름 수정
-                    if (requestDto.getNewName() != null && !requestDto.getNewName().trim().isEmpty()) {
-                        user.setName(requestDto.getNewName().trim());
-                    }
-                    
-                    // 비밀번호 수정
-                    if (requestDto.getNewPassword() != null && !requestDto.getNewPassword().trim().isEmpty()) {
-                        String encodedNewPassword = passwordEncoder.encode(requestDto.getNewPassword().trim());
-                        user.setPasswordHash(encodedNewPassword);
-                    }
-                    
-                    usersRepository.save(user);
-                    
-                    return UpdateProfileResponseDto.builder()
-                            .success(true)
-                            .message("프로필이 성공적으로 수정되었습니다.")
-                            .build();
-                })
-                .orElse(UpdateProfileResponseDto.builder()
-                        .success(false)
-                        .message("현재 비밀번호가 올바르지 않거나 사용자를 찾을 수 없습니다.")
-                        .build());
+        try {
+            System.out.println("UserService updateProfile - userId: " + userId);
+            System.out.println("UserService updateProfile - newName: " + requestDto.getNewName());
+            System.out.println("UserService updateProfile - newPassword: " + (requestDto.getNewPassword() != null ? "***" : "null"));
+            
+            return usersRepository.findByUserId(userId)
+                    .filter(user -> !user.getIsDeleted())
+                    .map(user -> {
+                        System.out.println("UserService updateProfile - found user: " + user.getName());
+                        boolean isModified = false;
+                        
+                        // 이름 수정 (값이 있고 기존과 다른 경우에만)
+                        if (requestDto.getNewName() != null && !requestDto.getNewName().trim().isEmpty() 
+                                && !requestDto.getNewName().trim().equals(user.getName())) {
+                            System.out.println("UserService updateProfile - updating name from '" + user.getName() + "' to '" + requestDto.getNewName().trim() + "'");
+                            user.setName(requestDto.getNewName().trim());
+                            isModified = true;
+                        }
+                        
+                        // 비밀번호 수정 (값이 있는 경우에만)
+                        if (requestDto.getNewPassword() != null && !requestDto.getNewPassword().trim().isEmpty()) {
+                            System.out.println("UserService updateProfile - updating password");
+                            String encodedNewPassword = passwordEncoder.encode(requestDto.getNewPassword().trim());
+                            user.setPasswordHash(encodedNewPassword);
+                            isModified = true;
+                        }
+                        
+                        // 변경사항이 있는 경우에만 저장
+                        if (isModified) {
+                            System.out.println("UserService updateProfile - saving changes");
+                            usersRepository.save(user);
+                            return UpdateProfileResponseDto.builder()
+                                    .success(true)
+                                    .message("프로필이 성공적으로 수정되었습니다.")
+                                    .build();
+                        } else {
+                            System.out.println("UserService updateProfile - no changes to save");
+                            return UpdateProfileResponseDto.builder()
+                                    .success(true)
+                                    .message("수정할 내용이 없습니다.")
+                                    .build();
+                        }
+                    })
+                    .orElse(UpdateProfileResponseDto.builder()
+                            .success(false)
+                            .message("사용자를 찾을 수 없습니다.")
+                            .build());
+        } catch (Exception e) {
+            System.err.println("UserService updateProfile error: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     // 마이페이지 접근 확인 (비밀번호 검증)
