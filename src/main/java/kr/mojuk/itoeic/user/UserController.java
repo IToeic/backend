@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
+import kr.mojuk.itoeic.user.dto.MyPageAccessRequestDto;
 
 @RestController
 @RequestMapping("/api/user")
@@ -89,6 +90,37 @@ public class UserController {
             return ResponseEntity.badRequest().body(EmailVerificationResponseDto.builder()
                     .success(false)
                     .message("인증 코드가 올바르지 않거나 만료되었습니다.")
+                    .build());
+        }
+    }
+    
+    // 마이페이지 접근 확인 (비밀번호 검증)
+    @PostMapping("/mypage/verify")
+    public ResponseEntity<MyPageResponseDto> verifyMyPageAccess(
+            HttpSession session,
+            @RequestBody MyPageAccessRequestDto requestDto) {
+        try {
+            String userId = (String) session.getAttribute("userId");
+            if (userId == null) {
+                return ResponseEntity.status(401).body(MyPageResponseDto.builder()
+                        .success(false)
+                        .message("로그인이 필요합니다.")
+                        .build());
+            }
+            
+            MyPageResponseDto response = userService.verifyMyPageAccess(userId, requestDto);
+            
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
+        } catch (Exception e) {
+            System.err.println("Error in verifyMyPageAccess: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(MyPageResponseDto.builder()
+                    .success(false)
+                    .message("마이페이지 접근 확인 중 오류가 발생했습니다.")
                     .build());
         }
     }

@@ -8,6 +8,7 @@ import kr.mojuk.itoeic.user.dto.SignupResponseDto;
 import kr.mojuk.itoeic.user.dto.MyPageResponseDto;
 import kr.mojuk.itoeic.user.dto.UpdateProfileRequestDto;
 import kr.mojuk.itoeic.user.dto.UpdateProfileResponseDto;
+import kr.mojuk.itoeic.user.dto.MyPageAccessRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -140,6 +141,24 @@ public class UserService {
                 .orElse(UpdateProfileResponseDto.builder()
                         .success(false)
                         .message("현재 비밀번호가 올바르지 않거나 사용자를 찾을 수 없습니다.")
+                        .build());
+    }
+
+    // 마이페이지 접근 확인 (비밀번호 검증)
+    public MyPageResponseDto verifyMyPageAccess(String userId, MyPageAccessRequestDto requestDto) {
+        return usersRepository.findByUserId(userId)
+                .filter(user -> !user.getIsDeleted())
+                .filter(user -> passwordEncoder.matches(requestDto.getPassword(), user.getPasswordHash()))
+                .map(user -> MyPageResponseDto.builder()
+                        .success(true)
+                        .message("마이페이지 접근이 허용되었습니다.")
+                        .userId(user.getUserId())
+                        .name(user.getName())
+                        .email(user.getEmail())
+                        .build())
+                .orElse(MyPageResponseDto.builder()
+                        .success(false)
+                        .message("비밀번호가 올바르지 않거나 사용자를 찾을 수 없습니다.")
                         .build());
     }
 } 
