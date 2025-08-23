@@ -11,6 +11,13 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new SessionInterceptor())
                 .addPathPatterns("/api/user/mypage/**")
-                .excludePathPatterns("/api/user/login", "/api/user/signup", "/api/user/send-verification-email", "/api/user/verify-email-code");
+                .excludePathPatterns(
+                    "/api/user/login", 
+                    "/api/user/logout", 
+                    "/api/user/signup", 
+                    "/api/user/send-verification-email", 
+                    "/api/user/verify-email-code",
+                    "/api/user/mypage/verify"
+                );
     }
 } 

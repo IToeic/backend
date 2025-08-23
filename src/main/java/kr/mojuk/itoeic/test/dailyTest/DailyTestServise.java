@@ -8,8 +8,11 @@ import jakarta.transaction.Transactional;
 import kr.mojuk.itoeic.test.dailyTest.DailyTestDTO.Request.WordResult;
 import kr.mojuk.itoeic.test.testRepository.*;
 import kr.mojuk.itoeic.test.tsetEntity.IncorrectWord;
+import kr.mojuk.itoeic.test.tsetEntity.Progresses;
 import kr.mojuk.itoeic.user.UsersRepository;
 import kr.mojuk.itoeic.word.word.WordRepository;
+
+import java.time.LocalDate;
 
 @Service
 public class DailyTestServise {
@@ -60,8 +63,31 @@ public class DailyTestServise {
                 }
             }
         }
-        //단어들의 상태를 completed 업데이트
-        progressesRepository.updateStatusToCompleted(request.getUserId(), wordIds);
+        
+        // Progresses 레코드 생성 또는 업데이트
+        for (Integer wordId : wordIds) {
+            var word = wordRepository.findById(wordId).orElseThrow();
+            
+            // 기존 Progresses 레코드 확인
+            var existingProgress = progressesRepository.findByUserIdAndWordIds(request.getUserId(), List.of(wordId));
+            
+            if (existingProgress.isEmpty()) {
+                // Progresses 레코드가 없으면 새로 생성
+                Progresses newProgress = Progresses.builder()
+                        .user(user)
+                        .word(word)
+                        .status(Progresses.Status.COMPLETED)
+                        .learnDate(LocalDate.now())
+                        .build();
+                progressesRepository.save(newProgress);
+            } else {
+                // 기존 레코드가 있으면 상태와 학습 날짜 업데이트
+                var progress = existingProgress.get(0);
+                progress.setStatus(Progresses.Status.COMPLETED);
+                progress.setLearnDate(LocalDate.now());
+                progressesRepository.save(progress);
+            }
+        }
     }
     
 }

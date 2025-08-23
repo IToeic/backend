@@ -3,6 +3,8 @@ package kr.mojuk.itoeic.word.progress;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "progresses")
 @Getter
@@ -25,4 +27,8 @@ public class Progress {
 
     @Column(nullable = false)
     private String status; // "learning" or "completed"
+
+    @Builder.Default
+    @Column(name = "learn_date")
+    private LocalDate learnDate = LocalDate.now();
 }

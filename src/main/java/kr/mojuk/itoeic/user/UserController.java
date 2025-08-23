@@ -15,7 +15,6 @@ import kr.mojuk.itoeic.user.dto.MyPageAccessRequestDto;
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class UserController {
     
     private final UserService userService;
@@ -43,7 +42,6 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<SignupResponseDto> signup(@RequestBody SignupRequestDto signupRequestDto) {
         try {
-            System.out.println("Received signup request: " + signupRequestDto);
             SignupResponseDto response = userService.signup(signupRequestDto);
             
             if (response.isSuccess()) {
@@ -52,8 +50,6 @@ public class UserController {
                 return ResponseEntity.badRequest().body(response);
             }
         } catch (Exception e) {
-            System.err.println("Error in signup: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.badRequest().body(SignupResponseDto.builder()
                     .success(false)
                     .message("회원가입 처리 중 오류가 발생했습니다.")
@@ -116,8 +112,6 @@ public class UserController {
                 return ResponseEntity.badRequest().body(response);
             }
         } catch (Exception e) {
-            System.err.println("Error in verifyMyPageAccess: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.badRequest().body(MyPageResponseDto.builder()
                     .success(false)
                     .message("마이페이지 접근 확인 중 오류가 발생했습니다.")
@@ -167,11 +161,6 @@ public class UserController {
                         .message("로그인이 필요합니다.")
                         .build());
             }
-            
-            System.out.println("UpdateProfile Request - userId: " + userId);
-            System.out.println("UpdateProfile Request - newName: " + requestDto.getNewName());
-            System.out.println("UpdateProfile Request - newPassword: " + (requestDto.getNewPassword() != null ? "***" : "null"));
-            
             UpdateProfileResponseDto response = userService.updateProfile(userId, requestDto);
             
             if (response.isSuccess()) {
@@ -180,12 +169,9 @@ public class UserController {
                 return ResponseEntity.badRequest().body(response);
             }
         } catch (Exception e) {
-            System.err.println("Error in updateProfile: " + e.getMessage());
-            System.err.println("Error details: " + e.getClass().getSimpleName());
-            e.printStackTrace();
             return ResponseEntity.badRequest().body(UpdateProfileResponseDto.builder()
                     .success(false)
-                    .message("프로필 수정 중 오류가 발생했습니다: " + e.getMessage())
+                    .message("프로필 수정 중 오류가 발생했습니다.")
                     .build());
         }
     }
