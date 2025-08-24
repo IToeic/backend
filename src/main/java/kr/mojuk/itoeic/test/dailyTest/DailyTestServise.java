@@ -1,6 +1,7 @@
 package kr.mojuk.itoeic.test.dailyTest;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -32,62 +33,66 @@ public class DailyTestServise {
     }
     
     @Transactional
-    public void processTestResult(DailyTestDTO.Request request) {
-    	var user = usersRepository.findById(request.getUserId()).orElseThrow();
-    	
-    	// 단어ID 저장용 리스트
-        List<Integer> wordIds = new ArrayList<>();
-        
+    public void processTestResult(String userId, DailyTestDTO.Request request) {
+    	var user = usersRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다. ID: " + userId));
+
+        // 1. 틀린 단어(wrongCount > 0)만 필터링하여 IncorrectWord 테이블에 저장합니다.
         for (WordResult wordResult : request.getWords()) {
-        	//단어ID 배열에 저장
-            wordIds.add(wordResult.getWordId());
-            
-            //해당 단어의 틀린 횟수가 1회 이상인 경우(1번이라도 틀렸을 경우)
             if (wordResult.getWrongCount() > 0) {
-            	
-            	//중복 여부 확인 변수
+                // 이미 틀린 단어로 등록되어 있는지 중복 확인
                 boolean alreadyExists = incorrectWordRepository
-                        .findByUserIdAndWordId(request.getUserId(), wordResult.getWordId())
+                        .findByUserIdAndWordId(userId, wordResult.getWordId())
                         .isPresent();
 
-                //중복이 아닌 경우
+                // 중복이 아닐 경우에만 새로 저장
                 if (!alreadyExists) {
-                    var word = wordRepository.findById(wordResult.getWordId()).orElseThrow();
+                    var word = wordRepository.findById(wordResult.getWordId())
+                            .orElseThrow(() -> new IllegalArgumentException("해당 단어를 찾을 수 없습니다. ID: " + wordResult.getWordId()));
+                    
                     IncorrectWord incorrectWord = IncorrectWord.builder()
                             .user(user)
                             .word(word)
                             .build();
                     
-                    //DB에 틀린 단어 저장 
                     incorrectWordRepository.save(incorrectWord);
                 }
             }
         }
         
-        // Progresses 레코드 생성 또는 업데이트
-        for (Integer wordId : wordIds) {
-            var word = wordRepository.findById(wordId).orElseThrow();
-            
-            // 기존 Progresses 레코드 확인
-            var existingProgress = progressesRepository.findByUserIdAndWordIds(request.getUserId(), List.of(wordId));
-            
-            if (existingProgress.isEmpty()) {
-                // Progresses 레코드가 없으면 새로 생성
-                Progresses newProgress = Progresses.builder()
-                        .user(user)
-                        .word(word)
-                        .status(Progresses.Status.COMPLETED)
-                        .learnDate(LocalDate.now())
-                        .build();
-                progressesRepository.save(newProgress);
-            } else {
-                // 기존 레코드가 있으면 상태와 학습 날짜 업데이트
-                var progress = existingProgress.get(0);
-                progress.setStatus(Progresses.Status.COMPLETED);
-                progress.setLearnDate(LocalDate.now());
-                progressesRepository.save(progress);
-            }
+        // 2. 요청에 포함된 모든 단어의 ID를 리스트로 추출합니다.
+        List<Integer> allWordIds = request.getWords().stream()
+                                          .map(WordResult::getWordId)
+                                          .collect(Collectors.toList());
+
+        // 3. 단어 ID 리스트가 비어있지 않다면, Progresses 상태를 'COMPLETED'로 일괄 업데이트합니다.
+        if (!allWordIds.isEmpty()) {
+            progressesRepository.updateStatusToCompleted(userId, allWordIds);
         }
+    }
+    
+    @Transactional
+    public void setTestLearning(String userId, Integer wordId) {
+    	//유저
+        var user = usersRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다. ID: " + userId));
+        
+        //단어
+        var word = wordRepository.findById(wordId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 단어를 찾을 수 없습니다. ID: " + wordId));
+
+        //이미 동일한 학습 기록이 있는지 확인하여 중복 저장을 방지합니다.
+        var existingProgress = progressesRepository.findByUserIdAndWordIds(userId, List.of(wordId));
+        if (!existingProgress.isEmpty()) {
+            return;
+        }
+
+        Progresses newProgress = Progresses.builder()
+                .user(user)
+                .word(word)
+                .build();
+
+        progressesRepository.save(newProgress);
     }
     
 }
