@@ -19,8 +19,9 @@ public class WordController {
      */
     @GetMapping("/daily")
     public ResponseEntity<List<WordDTO.Response>> getRandomWordsByPack(
-            @RequestParam("wordpackId") Integer wordpackId) {
-        return ResponseEntity.ok(wordService.getRandomWordsByPack(wordpackId));
+            @RequestParam("wordpackId") Integer wordpackId,
+            @RequestParam("userId") String userId) { // 🔥 userId 파라미터 추가
+        return ResponseEntity.ok(wordService.getRandomWordsByPack(wordpackId, userId)); // 🔥 userId 전달
     }
 
     /**

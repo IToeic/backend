@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import kr.mojuk.itoeic.test.tsetEntity.Progresses;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ProgressesRepository extends JpaRepository<Progresses, Integer> {
@@ -24,4 +25,7 @@ public interface ProgressesRepository extends JpaRepository<Progresses, Integer>
     @Modifying
     @Query("UPDATE Progresses p SET p.status = 'COMPLETED' WHERE p.user.userId = :userId AND p.word.wordId IN :wordIds")
     int updateStatusToCompleted(@Param("userId")String userId, @Param("wordIds") List<Integer> wordIds);
+    
+    //사용자 ID와 학습 날짜로 Progresses 조회
+    List<Progresses> findByUser_UserIdAndLearnDateAndStatusNot(String userId, LocalDate learnDate, Progresses.Status status);
 }
