@@ -32,6 +32,34 @@ public class DailyTestServise {
 		this.wordRepository = wordRepository;
     }
     
+    // 1. 단어 세트를 PENDING 상태로 저장하는 메소드
+    @Transactional
+    public void createPendingWords(String userId, List<Integer> wordIds) {
+        var user = usersRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다. ID: " + userId));
+
+        List<Progresses> newProgresses = new ArrayList<>();
+        for (Integer wordId : wordIds) {
+            // 중복 저장을 방지하기 위해 이미 해당 단어에 대한 진행 기록이 있는지 확인합니다.
+            boolean exists = !progressesRepository.findByUserIdAndWordIds(userId, List.of(wordId)).isEmpty();
+            if (!exists) {
+                var word = wordRepository.findById(wordId)
+                        .orElseThrow(() -> new IllegalArgumentException("해당 단어를 찾을 수 없습니다. ID: " + wordId));
+                
+                Progresses progress = Progresses.builder()
+                        .user(user)
+                        .word(word)
+                        .build(); // status는 엔티티에서 PENDING으로 기본 설정됨
+                
+                newProgresses.add(progress);
+            }
+        }
+
+        if (!newProgresses.isEmpty()) {
+            progressesRepository.saveAll(newProgresses);
+        }
+    }
+    
     @Transactional
     public void processTestResult(String userId, DailyTestDTO.Request request) {
     	var user = usersRepository.findById(userId)
@@ -72,27 +100,8 @@ public class DailyTestServise {
     }
     
     @Transactional
-    public void setTestLearning(String userId, Integer wordId) {
-    	//유저
-        var user = usersRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다. ID: " + userId));
-        
-        //단어
-        var word = wordRepository.findById(wordId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 단어를 찾을 수 없습니다. ID: " + wordId));
-
-        //이미 동일한 학습 기록이 있는지 확인하여 중복 저장을 방지합니다.
-        var existingProgress = progressesRepository.findByUserIdAndWordIds(userId, List.of(wordId));
-        if (!existingProgress.isEmpty()) {
-            return;
-        }
-
-        Progresses newProgress = Progresses.builder()
-                .user(user)
-                .word(word)
-                .build();
-
-        progressesRepository.save(newProgress);
+    public void updateStatusToLearning(String userId, Integer wordId) {
+        progressesRepository.updateStatusToLearning(userId, wordId);
     }
     
 }

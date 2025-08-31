@@ -32,14 +32,15 @@ public class Progresses {
 	@Builder.Default
 	@Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status = Status.LEARNING;
+    private Status status = Status.PENDING;
 
     @Builder.Default
     @Column(name = "learn_date")
     private LocalDate learnDate = LocalDate.now();
 
     public enum Status {
-        LEARNING,
+        PENDING,
+    	LEARNING,
         COMPLETED
     }
 }
