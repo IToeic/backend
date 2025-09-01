@@ -28,4 +28,6 @@ public interface ProgressesRepository extends JpaRepository<Progresses, Integer>
     
     //사용자 ID와 학습 날짜로 Progresses 조회
     List<Progresses> findByUser_UserIdAndLearnDateAndStatusNot(String userId, LocalDate learnDate, Progresses.Status status);
+    
+
 }
