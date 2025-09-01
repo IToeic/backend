@@ -20,7 +20,6 @@ public interface UserWordsRepository extends JpaRepository<UserWords, Integer> {
     Optional<UserWords> findByUserIdAndWordId(@Param("userId")String userId, @Param("wordId")Integer wordId);
 
     @Modifying
-    @Transactional
-    @Query("DELETE FROM UserWords uw WHERE uw.user.userId = :userId AND uw.word.wordId = :wordId")
-    void deleteByUserIdAndWordId(@Param("userId")String userId, @Param("wordId")Integer wordId);
+    @Query("DELETE FROM UserWords uw WHERE uw.user.userId = :userId AND uw.word.wordId IN :wordIds")
+    void deleteByUserIdAndWordIds(@Param("userId")String userId, @Param("wordIds")List<Integer> wordIds);
 }

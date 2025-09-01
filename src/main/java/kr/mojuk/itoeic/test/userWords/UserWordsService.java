@@ -29,12 +29,13 @@ public class UserWordsService {
                 .collect(Collectors.toList());
     }
 
+    // ✨ addUserWord 메서드 시그니처 변경
     @Transactional
-    public void addUserWord(UserWordRequestDto request) {
-    	Users user = usersRepository.findById(request.getUserId())
+    public void addUserWord(String userId, Integer wordId) {
+    	Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
 
-        Word word = wordRepository.findById(request.getWordId())
+        Word word = wordRepository.findById(wordId)
                 .orElseThrow(() -> new IllegalArgumentException("단어 없음"));
         
         boolean exists = userWordsRepository.findByUserIdAndWordId(user.getUserId(), word.getWordId()).isPresent();
@@ -49,7 +50,10 @@ public class UserWordsService {
     }
 
     @Transactional
-    public void deleteUserWord(UserWordRequestDto request) {
-    	userWordsRepository.deleteByUserIdAndWordId(request.getUserId(), request.getWordId());
+    public void deleteUserWords(String userId, List<Integer> wordIds) {
+    	if (wordIds == null || wordIds.isEmpty()) {
+            return;
+        }
+    	userWordsRepository.deleteByUserIdAndWordIds(userId, wordIds);
     }
 }

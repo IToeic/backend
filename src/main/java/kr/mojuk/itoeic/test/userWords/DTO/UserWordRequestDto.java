@@ -4,6 +4,5 @@ import lombok.Data;
 
 @Data
 public class UserWordRequestDto {
-    private String userId;
     private Integer wordId;
 }
