@@ -21,7 +21,9 @@ public class IncorrectWordService {
                 .collect(Collectors.toList());
     }
 
-    public void deleteIncorrectWord(Integer incorrectWordId) {
-        incorrectWordRepository.deleteById(incorrectWordId);
+    public void deleteIncorrectWords(String userId, List<Integer> wordIds) {
+        if (wordIds != null && !wordIds.isEmpty()) {
+            incorrectWordRepository.deleteByUserIdAndWordIdIn(userId, wordIds);
+        }
     }
 }
