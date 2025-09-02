@@ -17,7 +17,8 @@ public class WebConfig implements WebMvcConfigurer {
                     "/api/user/signup", 
                     "/api/user/send-verification-email", 
                     "/api/user/verify-email-code",
-                    "/api/user/mypage/verify"
+                    "/api/user/mypage/verify",
+                    "/api/tts/**"
                 );
     }
 } 
