@@ -9,7 +9,6 @@ public class WordpackTestDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Request {  	//사용자ID, 단어ID, 틀린 횟수 가져오기
-        private String userId;
         private List<WordResult> words;
         
         @Getter

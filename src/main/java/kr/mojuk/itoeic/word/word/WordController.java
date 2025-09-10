@@ -1,9 +1,14 @@
 package kr.mojuk.itoeic.word.word;
 
 import lombok.RequiredArgsConstructor;
+
+import org.apache.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpSession;
+
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -20,9 +25,17 @@ public class WordController {
     @GetMapping("/daily")
     public ResponseEntity<List<WordDTO.Response>> getRandomWordsByPack(
             @RequestParam("wordpackId") Integer wordpackId,
-            @RequestParam("userId") String userId) { // 🔥 userId 파라미터 추가
+            HttpSession session) { // 🔥 HttpSession 사용
+        String userId = (String) session.getAttribute("userId"); // 🔥 세션에서 userId 가져오기
+
+        // 세션에 userId가 없으면 (로그인하지 않은 경우) 401 Unauthorized 응답
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body(Collections.emptyList());
+        }
+        
         return ResponseEntity.ok(wordService.getRandomWordsByPack(wordpackId, userId)); // 🔥 userId 전달
     }
+
 
     /**
      * GET /api/words/all?wordpackId=N

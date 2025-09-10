@@ -26,17 +26,17 @@ public class WordpackTestServise {
     }
     
     @Transactional
-    public void processTestResult(WordpackTestDTO.Request request) {
-    	var user = usersRepository.findById(request.getUserId()).orElseThrow();
+    public void processTestResult(String userId, WordpackTestDTO.Request request) {
+        var user = usersRepository.findById(userId).orElseThrow();
         
         for (WordResult wordResult : request.getWords()) {
             
             //해당 단어의 틀린 횟수가 1회 이상인 경우(1번이라도 틀렸을 경우)
             if (wordResult.getWrongCount() > 0) {
-            	
-            	//중복 여부 확인 변수
+                
+                //중복 여부 확인 변수
                 boolean alreadyExists = incorrectWordRepository
-                        .findByUserIdAndWordId(request.getUserId(), wordResult.getWordId())
+                        .findByUserIdAndWordId(userId, wordResult.getWordId())
                         .isPresent();
 
                 //중복이 아닌 경우
