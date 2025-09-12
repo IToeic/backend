@@ -26,4 +26,8 @@ public class IncorrectWordService {
             incorrectWordRepository.deleteByUserIdAndWordIdIn(userId, wordIds);
         }
     }
+    
+    public long countIncorrectWordsByUserIdAndPackId(String userId, Integer packId) {
+        return incorrectWordRepository.countByUser_UserIdAndWord_WordPack_WordpackId(userId, packId);
+    }
 }

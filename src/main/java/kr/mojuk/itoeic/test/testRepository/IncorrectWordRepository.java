@@ -24,4 +24,6 @@ public interface IncorrectWordRepository extends JpaRepository<IncorrectWord, In
     @Modifying
     @Query("DELETE FROM IncorrectWord iw WHERE iw.user.userId = :userId AND iw.word.wordId IN :wordIds")
     void deleteByUserIdAndWordIdIn(@Param("userId") String userId, @Param("wordIds") List<Integer> wordIds);
+    
+    long countByUser_UserIdAndWord_WordPack_WordpackId(String userId, Integer packId);
 }
