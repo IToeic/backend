@@ -3,7 +3,9 @@ package kr.mojuk.itoeic.word.wordpack;
 import kr.mojuk.itoeic.word.progress.Progress;
 import kr.mojuk.itoeic.word.progress.ProgressDTO;
 import kr.mojuk.itoeic.word.progress.ProgressRepository;
+import kr.mojuk.itoeic.word.progress.ProgressStatsDTO;
 import kr.mojuk.itoeic.word.word.Word;
+import kr.mojuk.itoeic.word.word.WordCountDTO;
 import kr.mojuk.itoeic.word.word.WordRepository;
 import org.springframework.stereotype.Service;
 
@@ -27,52 +29,40 @@ public class WordPackService {
     }
 
     public List<ProgressDTO> getWordPackProgressList(String userId) {
+        // 1. 모든 단어팩 정보 조회 (기본 정보)
         List<WordPack> wordPacks = wordPackRepository.findAll();
-        List<Progress> progresses = progressRepository.findByUserId(userId);
-        List<Word> allWords = wordRepository.findAll();
-
-        // wordId → wordPackId 매핑
-        Map<Integer, Integer> wordIdToPackId = allWords.stream()
-                .collect(Collectors.toMap(
-                        Word::getWordId,
-                        w -> w.getWordPack().getWordpackId()
-                ));
-
-        // wordPackId → 전체 단어 수
-        Map<Integer, Long> wordPackIdToTotalCount = allWords.stream()
+        
+        // 2. 단어팩별 총 단어 수 (DB에서 계산)
+        List<WordCountDTO> wordCounts = wordRepository.countWordsByWordPack();
+        Map<Integer, Long> totalWordsMap = wordCounts.stream()
+                .collect(Collectors.toMap(WordCountDTO::getId, WordCountDTO::getCount));
+        
+        // 3. 사용자의 학습 상태 통계 (DB에서 계산)
+        Map<Integer, Map<String, Long>> progressStatsMap = 
+            progressRepository.findProgressStatsByUserId(userId)
+                .stream()
                 .collect(Collectors.groupingBy(
-                        w -> w.getWordPack().getWordpackId(),
-                        Collectors.counting()
+                    ProgressStatsDTO::getWordpackId,
+                    Collectors.toMap(
+                        stats -> stats.getStatus().toLowerCase(),
+                        ProgressStatsDTO::getCount
+                    )
                 ));
 
+        // 4. 메모리에서 세 종류의 데이터를 최종적으로 조합
         return wordPacks.stream()
                 .map(wp -> {
                     int wordpackId = wp.getWordpackId();
-
-                    int completeCount = (int) progresses.stream()
-                            .filter(p -> {
-                                Integer packId = wordIdToPackId.get(p.getWordId());
-                                return packId != null && packId == wordpackId &&
-                                        "completed".equalsIgnoreCase(p.getStatus());
-                            })
-                            .count();
-
-                    int learningCount = (int) progresses.stream()
-                            .filter(p -> {
-                                Integer packId = wordIdToPackId.get(p.getWordId());
-                                return packId != null && packId == wordpackId &&
-                                        "learning".equalsIgnoreCase(p.getStatus());
-                            })
-                            .count();
-
-                    int totalWords = wordPackIdToTotalCount.getOrDefault(wordpackId, 0L).intValue();
+                    Map<String, Long> packProgress = progressStatsMap.getOrDefault(wordpackId, Map.of());
+                    
+                    int totalWords = totalWordsMap.getOrDefault(wordpackId, 0L).intValue();
+                    int completeCount = packProgress.getOrDefault("completed", 0L).intValue();
 
                     return new ProgressDTO(
                             wordpackId,
                             wp.getName(),
                             totalWords,
-                            completeCount,
-                            learningCount
+                            completeCount
                     );
                 })
                 .collect(Collectors.toList());

@@ -2,6 +2,8 @@ package kr.mojuk.itoeic.word.word;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -24,4 +26,8 @@ public interface WordRepository extends JpaRepository<Word, Integer> {
             @Param("excludedWordIds") List<Integer> excludedWordIds,
             @Param("limit") int limit
     );
+    
+    //단어팩 ID별 총 단어 수를 계산하는 쿼리
+    @Query("SELECT w.wordPack.wordpackId as id, COUNT(w.wordId) as count FROM Word w GROUP BY w.wordPack.wordpackId")
+    List<WordCountDTO> countWordsByWordPack();
 }
