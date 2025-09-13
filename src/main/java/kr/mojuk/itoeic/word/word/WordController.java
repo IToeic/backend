@@ -2,7 +2,7 @@ package kr.mojuk.itoeic.word.word;
 
 import lombok.RequiredArgsConstructor;
 
-import org.apache.http.HttpStatus;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +30,7 @@ public class WordController {
 
         // 세션에 userId가 없으면 (로그인하지 않은 경우) 401 Unauthorized 응답
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.SC_UNAUTHORIZED).body(Collections.emptyList());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
         }
         
         return ResponseEntity.ok(wordService.getRandomWordsByPack(wordpackId, userId)); // 🔥 userId 전달
