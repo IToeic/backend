@@ -1,6 +1,8 @@
 package kr.mojuk.itoeic.test.dailyTest;
 
 import kr.mojuk.itoeic.test.dailyTest.WordIdListDTO;
+import kr.mojuk.itoeic.test.testDTO.TestResultRequest;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +31,7 @@ public class DailyTestController {
     // 단어 세트를 COMPLETE로 수정하는 API
     @PostMapping("/daily")
     public ResponseEntity<Void> dailyTestResultProcess(
-    		@RequestBody DailyTestDTO.Request request,
+    		@RequestBody TestResultRequest request,
     		HttpSession session) {
     	String userId = (String) session.getAttribute("userId");
     	dailyTestServise.processTestResult(userId, request);

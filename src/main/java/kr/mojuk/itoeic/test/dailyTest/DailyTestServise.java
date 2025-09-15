@@ -6,7 +6,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
-import kr.mojuk.itoeic.test.dailyTest.DailyTestDTO.Request.WordResult;
+import kr.mojuk.itoeic.test.testDTO.TestResultRequest;
+import kr.mojuk.itoeic.test.testDTO.WordResult;
 import kr.mojuk.itoeic.test.testRepository.*;
 import kr.mojuk.itoeic.test.tsetEntity.IncorrectWord;
 import kr.mojuk.itoeic.test.tsetEntity.Progresses;
@@ -49,7 +50,7 @@ public class DailyTestServise {
                 Progresses progress = Progresses.builder()
                         .user(user)
                         .word(word)
-                        .build(); // status는 엔티티에서 PENDING으로 기본 설정됨
+                        .build();
                 
                 newProgresses.add(progress);
             }
@@ -61,39 +62,47 @@ public class DailyTestServise {
     }
     
     @Transactional
-    public void processTestResult(String userId, DailyTestDTO.Request request) {
-    	var user = usersRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다. ID: " + userId));
+    public void processTestResult(String userId, TestResultRequest request) {
+    	var user = usersRepository.findById(userId).orElseThrow(); // 예외 처리는 나중에 개선
 
-        // 1. 틀린 단어(wrongCount > 0)만 필터링하여 IncorrectWord 테이블에 저장합니다.
-        for (WordResult wordResult : request.getWords()) {
-            if (wordResult.getWrongCount() > 0) {
-                // 이미 틀린 단어로 등록되어 있는지 중복 확인
-                boolean alreadyExists = incorrectWordRepository
-                        .findByUserIdAndWordId(userId, wordResult.getWordId())
-                        .isPresent();
+    	// 1. 틀린 단어 처리
+        // 요청에 포함된 단어 중 틀린 것들의 ID만 추출
+        List<Integer> wrongWordIdsFromRequest = request.getWords().stream()
+                .filter(word -> word.getWrongCount() > 0)
+                .map(WordResult::getWordId)
+                .collect(Collectors.toList());
 
-                // 중복이 아닐 경우에만 새로 저장
-                if (!alreadyExists) {
-                    var word = wordRepository.findById(wordResult.getWordId())
-                            .orElseThrow(() -> new IllegalArgumentException("해당 단어를 찾을 수 없습니다. ID: " + wordResult.getWordId()));
-                    
-                    IncorrectWord incorrectWord = IncorrectWord.builder()
-                            .user(user)
-                            .word(word)
-                            .build();
-                    
-                    incorrectWordRepository.save(incorrectWord);
-                }
+        // 틀린 단어가 있는 경우에만 DB에 조회 및 저장 로직 실행
+        if (!wrongWordIdsFromRequest.isEmpty()) {
+            // DB에 딱 한 번만 조회해서 이미 저장된 '틀린 단어' ID들을 가져옴
+            Set<Integer> existingIncorrectWordIds = incorrectWordRepository
+                    .findWordIdsByUserIdAndWordIdIn(userId, wrongWordIdsFromRequest);
+
+            // 메모리에서 비교하여 DB에 새로 저장해야 할 단어 엔티티 리스트를 생성
+            List<IncorrectWord> newIncorrectWords = wrongWordIdsFromRequest.stream()
+                    .filter(wordId -> !existingIncorrectWordIds.contains(wordId))
+                    .map(wordId -> {
+                        var word = wordRepository.findById(wordId).orElseThrow();
+                        return IncorrectWord.builder()
+                                .user(user)
+                                .word(word)
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+
+            // 새로 추가할 단어들을 DB에 한 번의 쿼리로 모두 저장
+            if (!newIncorrectWords.isEmpty()) {
+                incorrectWordRepository.saveAll(newIncorrectWords);
             }
         }
-        
-        // 2. 요청에 포함된 모든 단어의 ID를 리스트로 추출합니다.
+
+        // 2. 학습 진행 상태(Progresses) 'COMPLETED'로 일괄 업데이트 
+        // 요청에 포함된 '모든' 단어의 ID 리스트를 추출
         List<Integer> allWordIds = request.getWords().stream()
                                           .map(WordResult::getWordId)
                                           .collect(Collectors.toList());
 
-        // 3. 단어 ID 리스트가 비어있지 않다면, Progresses 상태를 'COMPLETED'로 일괄 업데이트합니다.
+        // 단어 ID 리스트가 비어있지 않다면, Progresses 상태를 'COMPLETED'로 일괄 업데이트
         if (!allWordIds.isEmpty()) {
             progressesRepository.updateStatusToCompleted(userId, allWordIds);
         }

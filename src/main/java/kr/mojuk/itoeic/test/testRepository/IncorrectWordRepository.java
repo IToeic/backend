@@ -8,8 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import kr.mojuk.itoeic.test.tsetEntity.IncorrectWord;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public interface IncorrectWordRepository extends JpaRepository<IncorrectWord, Integer> {
 
@@ -26,4 +25,7 @@ public interface IncorrectWordRepository extends JpaRepository<IncorrectWord, In
     void deleteByUserIdAndWordIdIn(@Param("userId") String userId, @Param("wordIds") List<Integer> wordIds);
     
     long countByUser_UserIdAndWord_WordPack_WordpackId(String userId, Integer packId);
+    
+    @Query("SELECT iw.word.wordId FROM IncorrectWord iw WHERE iw.user.userId = :userId AND iw.word.wordId IN :wordIds")
+    Set<Integer> findWordIdsByUserIdAndWordIdIn(@Param("userId") String userId, @Param("wordIds") List<Integer> wordIds);
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpSession;
+import kr.mojuk.itoeic.test.testDTO.TestResultRequest;
 
 @RestController
 @RequestMapping("/api/wordpack")
@@ -20,7 +21,7 @@ public class WordpackTestController {
     }
     
     @PostMapping("/test")
-    public ResponseEntity<Void> wordpackTestResultProcess(@RequestBody WordpackTestDTO.Request request, HttpSession session) {
+    public ResponseEntity<Void> wordpackTestResultProcess(@RequestBody TestResultRequest request, HttpSession session) {
         // 세션에서 사용자 ID를 가져옵니다.
         String userId = (String) session.getAttribute("userId");
         
